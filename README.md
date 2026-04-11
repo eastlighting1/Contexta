@@ -5,11 +5,20 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-prototype-D97706" alt="prototype status">
   <img src="https://img.shields.io/badge/python-3.14%2B-2563EB" alt="python 3.14+">
-  <img src="https://img.shields.io/badge/import-contexta-111827" alt="contexta import">
-  <img src="https://img.shields.io/badge/workspace-.contexta-059669" alt=".contexta workspace">
+  <img src="https://img.shields.io/badge/stack-Python%20%7C%20uv%20%7C%20pytest-1F2937" alt="project stack">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/status-prototype-D97706" alt="prototype status">
   <img src="https://img.shields.io/badge/focus-local--first-0F766E" alt="local-first">
+</p>
+
+<p align="center">
+  <a href="https://github.com/eastlighting1/Contexta/actions/workflows/ci.yml"><img src="https://github.com/eastlighting1/Contexta/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/eastlighting1/Contexta/actions/workflows/test-matrix.yml"><img src="https://github.com/eastlighting1/Contexta/actions/workflows/test-matrix.yml/badge.svg" alt="Test Matrix"></a>
+  <a href="https://github.com/eastlighting1/Contexta/actions/workflows/examples.yml"><img src="https://github.com/eastlighting1/Contexta/actions/workflows/examples.yml/badge.svg" alt="Docs and Examples"></a>
+  <a href="https://github.com/eastlighting1/Contexta/actions/workflows/packaging.yml"><img src="https://github.com/eastlighting1/Contexta/actions/workflows/packaging.yml/badge.svg" alt="Packaging"></a>
 </p>
 
 <p align="center">

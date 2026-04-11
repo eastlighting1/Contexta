@@ -53,7 +53,7 @@ jobs:
           uv run pytest --tb=short -q
 
       - name: Dependency audit
-        run: uv audit --preview-features audit
+        run: uv audit
 
       - name: Build wheel and sdist
         run: uv build
