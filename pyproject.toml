@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "contexta"
-version = "0.1.1"
+version = "1.0.0"
 description = "Local-first observability for ML systems"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -76,10 +76,10 @@ all-integrations = [
 contexta = "contexta.surfaces.cli.main:main"
 
 [project.urls]
-Homepage = "https://github.com/your-org/contexta"
-Documentation = "https://your-org.github.io/contexta"
-Repository = "https://github.com/your-org/contexta"
-"Bug Tracker" = "https://github.com/your-org/contexta/issues"
+Homepage = "https://github.com/eastlighting1/Contexta"
+Documentation = "https://github.com/eastlighting1/Contexta/tree/main/docs"
+Repository = "https://github.com/eastlighting1/Contexta"
+"Bug Tracker" = "https://github.com/eastlighting1/Contexta/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/contexta"]

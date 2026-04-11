@@ -5,12 +5,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/python-3.14%2B-2563EB" alt="python 3.14+">
-  <img src="https://img.shields.io/badge/stack-Python%20%7C%20uv%20%7C%20pytest-1F2937" alt="project stack">
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/status-prototype-D97706" alt="prototype status">
+  <a href="https://pypi.org/project/contexta/"><img src="https://img.shields.io/pypi/v/contexta" alt="PyPI version"></a>
+  <img src="https://img.shields.io/pypi/pyversions/contexta" alt="Python versions">
+  <img src="https://img.shields.io/badge/status-alpha-D97706" alt="alpha">
   <img src="https://img.shields.io/badge/focus-local--first-0F766E" alt="local-first">
 </p>
 
@@ -27,81 +24,98 @@
   <a href="#documentation-map">Docs Map</a>
 </p>
 
-`Contexta` brings the six legacy library roles into one product surface. The intended developer experience is one canonical Python import root, one canonical CLI, one canonical workspace, and one consistent contract for writing, storing, querying, comparing, and recovering observability data.
-
-> [!NOTE]
-> `Contexta` is in a prototype-to-product transition. The canonical public identity is already `Contexta` and `contexta`, but some packaging and CLI alignment work is still in progress. This README uses the final product language first and calls out transitional behavior only where it matters.
+`Contexta` is a local-first ML observability library. It provides one canonical import root, one canonical CLI, one canonical workspace, and one consistent contract for writing, storing, querying, comparing, and recovering observability data — without a cloud backend.
 
 ## Why Contexta
 
 - **One product surface**
-  Start from `from contexta import Contexta` instead of stitching together separate package roots.
+  Start from `from contexta import Contexta` instead of stitching together separate tools.
 - **Canonical local workspace**
   Keep metadata, records, artifacts, reports, and recovery state in a local `.contexta/` workspace.
 - **Read-oriented investigation**
   Query runs, compare outcomes, inspect diagnostics, follow lineage, and build reports from canonical data.
 - **Recovery built in**
-  Replay, backup, restore, and artifact transfer are part of the product direction, not separate utilities.
+  Replay, backup, restore, and artifact transfer are first-class features, not separate utilities.
+- **Framework-agnostic**
+  Works alongside scikit-learn, PyTorch, HuggingFace Transformers, vLLM, or any other ML stack.
 
 ## Quickstart
 
-The shortest fully verified prototype path is:
+### Install
 
-1. Install the project in editable mode.
-2. Run the verified quickstart example.
-3. Inspect the generated report and workspace output.
-
-### 1. Install
-
-For local development inside this repository:
-
-```powershell
-uv sync --dev
+```bash
+pip install contexta
 ```
 
-Or with `pip`:
+or with `uv`:
 
-```powershell
-python -m pip install -e .
+```bash
+uv add contexta
 ```
 
-After installation, the canonical import is:
+### Run your first example
+
+The fastest way to see Contexta in action is the sklearn tabular example — no GPU required:
+
+```bash
+pip install contexta "scikit-learn>=1.6"
+uv run python examples/quickstart/qs01_sklearn_tabular.py
+```
+
+This trains an SVM and a Random Forest on the UCI Wine dataset, logs CV fold metrics and evaluation metrics to a local `.contexta/` workspace, then compares the two runs and registers the best model as a deployment.
+
+For deep learning and LLM examples see [`examples/quickstart/`](./examples/quickstart/README.md).
+
+### Minimal usage
 
 ```python
+from datetime import datetime, timezone
 from contexta import Contexta
+from contexta.config import UnifiedConfig, WorkspaceConfig
+from contexta.contract import (
+    Project, Run, StageExecution,
+    MetricPayload, MetricRecord, RecordEnvelope,
+)
+
+ctx = Contexta(config=UnifiedConfig(
+    project_name="my-project",
+    workspace=WorkspaceConfig(root_path=".contexta"),
+))
+store = ctx.metadata_store
+
+now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+store.projects.put_project(Project(project_ref="project:my-project", name="my-project", created_at=now))
+store.runs.put_run(Run(run_ref="run:my-project.run-01", project_ref="project:my-project",
+                       name="run-01", status="completed", started_at=now, ended_at=now))
+
+ctx.record_store.append(MetricRecord(
+    envelope=RecordEnvelope(
+        record_ref="record:my-project.run-01.r00001", record_type="metric",
+        recorded_at=now, observed_at=now, producer_ref="my-script",
+        run_ref="run:my-project.run-01",
+        completeness_marker="complete", degradation_marker="none",
+    ),
+    payload=MetricPayload(metric_key="accuracy", value=0.95, value_type="float64"),
+))
+
+snapshot = ctx.get_run_snapshot("run:my-project.run-01")
+report   = ctx.build_snapshot_report("run:my-project.run-01")
+print(report.title)
+
+store.close()
 ```
 
-### 2. Run The Verified Quickstart Example
+## Optional dependencies
 
-```powershell
-$env:PYTHONPATH = "src"
-uv run python examples/quickstart/verified_quickstart.py
+Contexta's core runtime only requires `duckdb`. Install framework extras only for what you use:
+
+```bash
+pip install "contexta[sklearn]"       # + scikit-learn
+pip install "contexta[torch]"         # + PyTorch
+pip install "contexta[transformers]"  # + HuggingFace Transformers + PyTorch
+pip install "contexta[all-integrations]"  # all of the above
 ```
-
-The example source lives at [`examples/quickstart/verified_quickstart.py`](./examples/quickstart/verified_quickstart.py).
-
-It creates a temporary workspace, writes minimal canonical data, queries the resulting run, and saves a markdown snapshot report.
-
-### 3. What This Confirms
-
-- the `contexta` import path is live
-- a canonical `.contexta/` workspace can be created locally
-- canonical metadata and records can be written
-- the unified facade can query that workspace and build a report
-- the quickstart example is executable and regression-covered
-
-## Runtime Capture Preview
-
-The runtime capture surface is already part of the product direction:
-
-```powershell
-$env:PYTHONPATH = "src"
-uv run python examples/quickstart/runtime_capture_preview.py
-```
-
-The preview source lives at [`examples/quickstart/runtime_capture_preview.py`](./examples/quickstart/runtime_capture_preview.py).
-
-The verified README quickstart intentionally uses the currently proven query/report path. The runtime capture preview is included separately so new users can see the scope API without over-promising the current onboarding workflow.
 
 ## Product Surface
 
@@ -117,69 +131,48 @@ The verified README quickstart intentionally uses the currently proven query/rep
 | `contexta.interpretation` | Stable | Query, compare, diagnostics, lineage, reports | Read and investigation flows |
 | `contexta.recovery` | Advanced | Replay, backup, restore | Operator and recovery work |
 
-The internal namespaces `contexta.api`, `contexta.runtime`, `contexta.common`, and `contexta.surfaces` are not documented as public import targets.
+The internal namespaces `contexta.api`, `contexta.runtime`, `contexta.common`, and `contexta.surfaces` are not public API targets.
 
 ## Documentation Map
 
-The public documentation set is being built in the following structure:
-
 ### Core Entry Points
 
-- `README.md`
-  - product overview, install, quickstart, migration note
-- `docs/index.md`
-  - document hub
+- `README.md` — product overview, install, quickstart
+- `docs/index.md` — document hub
 
 ### User Guide
 
-- `docs/user-guide/index.md`
+- `docs/user-guide/getting-started.md`
 - `docs/user-guide/key-features.md`
 - `docs/user-guide/tools-and-surfaces.md`
 - `docs/user-guide/core-concepts.md`
-- `docs/user-guide/getting-started.md`
 - `docs/user-guide/common-workflows.md`
 - `docs/user-guide/advanced.md`
-- `docs/user-guide/testing.md`
+- `docs/user-guide/case-studies.md`
 
 ### Reference
 
 - `docs/reference/api-reference.md`
 - `docs/reference/cli-reference.md`
-- `docs/reference/http-reference.md`
 
 ### Operations And Contribution
 
 - `docs/operations.md`
 - `docs/faq.md`
 - `CONTRIBUTING.md`
+- `SECURITY.md`
 
 ### Examples
 
-- `examples/quickstart/`
-  - verified quickstart and runtime capture preview
-- `examples/recovery/`
-  - operator-oriented recovery workflows
+- `examples/quickstart/` — qs01 (sklearn), qs02 (PyTorch CNN), qs03 (BERT), qs04 (vLLM RAG)
+- `examples/case_studies/` — 12 real-world observability scenarios
+- `examples/recovery/` — operator-oriented recovery workflows
 
 ## Design Notes
 
-The product direction is:
-
-- local-first
-- schema-first
-- reproducibility-oriented
+- local-first: all data stays on your machine
+- schema-first: every record follows a canonical contract
+- reproducibility-oriented: environment snapshots and provenance are first-class
 - explicit about degraded or incomplete states
 
-Internally, `Contexta` keeps separate truth-owning planes for:
-
-- metadata and relations
-- records
-- artifact bodies and bindings
-
-and then builds query/report/recovery surfaces over those planes.
-
-## Current Caveats
-
-- Some prototype-to-release packaging polish is still in progress.
-- Source-tree example runs still commonly use `PYTHONPATH=src`.
-
-These are release-alignment issues, not a change in the canonical product identity.
+Internally, Contexta separates truth-owning planes for metadata, records, and artifact bodies, then builds query, report, and recovery surfaces over those planes.

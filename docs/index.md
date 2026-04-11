@@ -104,8 +104,9 @@ Examples are part of the documentation surface, not separate throwaway samples.
 
 Current example groups:
 
-- [quickstart examples](../examples/quickstart/README.md)
-- [recovery examples](../examples/recovery/README.md)
+- [quickstart examples](../examples/quickstart/README.md) — qs01 (sklearn), qs02 (PyTorch CNN), qs03 (BERT), qs04 (vLLM RAG)
+- [case study examples](../examples/case_studies/README.md) — 12 real-world observability scenarios
+- [recovery examples](../examples/recovery/README.md) — operator-oriented recovery workflows
 
 ## Reading Paths
 
@@ -142,19 +143,12 @@ Public docs use canonical product names first:
 - env prefix: `CONTEXTA_*`
 - workspace root: `.contexta/`
 
-## Current Status
+## Documentation Coverage
 
-The public documentation set is being filled out progressively. At this stage:
+All major sections are available:
 
-- the README is the primary quickstart document
-- this hub defines the public doc structure
-- the User Guide index defines the guided reading path
-- the core and advanced User Guide pages now exist
-- the API reference now exists
-- the CLI reference now exists
-- the HTTP reference now exists
-- the quickstart example set now exists
-- the recovery example set now exists
-- operations, FAQ, and contribution pages now exist
-
-This page should remain the top-level navigation entry once the rest of `docs/` fills in.
+- README — product overview, install, quickstart
+- User Guide — getting started through advanced usage
+- API, CLI, and HTTP references
+- Quickstart and recovery examples
+- Operations, FAQ, and contribution guides

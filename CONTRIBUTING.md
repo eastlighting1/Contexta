@@ -15,15 +15,15 @@ Clone the repository and install the development environment:
 uv sync --dev
 ```
 
-For ad-hoc local scripts and public examples in the source tree, use:
+For ad-hoc local scripts run directly against the source tree (without
+installing), add `src` to the Python path:
 
 ```powershell
 $env:PYTHONPATH = "src"
 ```
 
-Current prototype note:
-
-- canonical public docs, package metadata, and CLI naming now use `Contexta` / `contexta`
+For normal usage, `uv sync --dev` installs the package in editable mode so
+`PYTHONPATH` is not needed.
 
 ## Repository Layout
 
@@ -72,7 +72,7 @@ When editing public docs:
 Public docs should describe:
 
 - stable product usage
-- current prototype caveats when they matter
+- known limitations or caveats when they matter
 
 Public docs should not expose:
 
@@ -133,7 +133,7 @@ When making code changes:
 
 When making documentation changes:
 
-- keep wording honest about prototype limitations
+- keep wording honest about current limitations
 - update hubs and entry pages when new docs appear
 - avoid leaving “planned” language behind once a page exists
 
@@ -238,7 +238,7 @@ Spot-check the wheel in a clean environment:
 
 ```powershell
 uv venv /tmp/ctx-release-check
-/tmp/ctx-release-check/Scripts/pip install dist/contexta-*.whl --quiet
+uv pip install --python /tmp/ctx-release-check/Scripts/python dist/contexta-*.whl --quiet
 /tmp/ctx-release-check/Scripts/python -c "from contexta import __version__; print(__version__)"
 /tmp/ctx-release-check/Scripts/contexta --help
 ```
@@ -272,20 +272,21 @@ git push origin main "v$(uv version --short)"
 
 Pushing the tag triggers the `release.yml` workflow (REL-026), which builds distributions and uploads them to the GitHub Release automatically.
 
-### 7. Create the GitHub Release
+### 7. Verify the automated release
 
-In GitHub: **Releases → Draft a new release**
+Pushing the tag triggers `release.yml`, which:
 
-- Tag: select the tag you just pushed (e.g. `v0.2.0`)
-- Title: `Contexta {VERSION}`
-- Body: paste the content of `.github/RELEASE_NOTES_v{VERSION}.md`
-- Attach `dist/contexta-{VERSION}-py3-none-any.whl` and `dist/contexta-{VERSION}.tar.gz`
-- For pre-releases (`rc`, `alpha`, `beta`): check **Set as a pre-release**
+1. Runs the full test suite as a release gate
+2. Builds the wheel and sdist
+3. Creates the GitHub Release and attaches the distributions automatically
+4. Publishes to PyPI via Trusted Publishing (OIDC)
+
+Check **Actions → Release** to confirm all three jobs (`build`, `github-release`, `pypi-publish`) passed.
 
 ### 8. Post-release
 
-- Verify the release page looks correct
-- Confirm PyPI upload succeeded (if applicable — see REL-025)
+- Verify the GitHub Release page looks correct
+- Confirm the PyPI release appears at `https://pypi.org/project/contexta/`
 - Delete the local `/tmp/ctx-release-check` venv
 
 ## CI Workflows

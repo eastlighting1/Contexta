@@ -1,136 +1,182 @@
 # Getting Started With Contexta
 
-This guide expands the README quickstart into a fuller onboarding path.
-
-At the current prototype stage, the most reliable end-to-end path is:
-
-1. install the project
-2. create a canonical workspace
-3. run the verified quickstart example
-4. query that workspace through the facade
-5. build a report
-
-This keeps the tutorial aligned with the currently verified prototype behavior.
+This guide walks you from installation to your first logged ML run.
 
 ## Before You Start
 
 You need:
 
 - Python `>=3.14`
-- a local checkout of this repository
-- a local filesystem where `.contexta/` can be created
+- A local filesystem where `.contexta/` can be created
 
-## Step 1: Install The Project
+No cloud account, no API key, no additional infrastructure required.
 
-For the current prototype checkout, the reliable local development path is:
+## Step 1: Install
 
-```powershell
+```bash
+pip install contexta
+```
+
+or with `uv`:
+
+```bash
+uv add contexta
+```
+
+For ML framework extras, install only what you use:
+
+```bash
+pip install "contexta[sklearn]"       # scikit-learn
+pip install "contexta[torch]"         # PyTorch
+pip install "contexta[transformers]"  # HuggingFace Transformers
+```
+
+### Development install (from source)
+
+If you are contributing to Contexta or want to run the examples against the
+working tree:
+
+```bash
+git clone https://github.com/eastlighting1/Contexta.git
+cd Contexta
 uv sync --dev
-$env:PYTHONPATH = "src"
 ```
 
-This makes the source tree importable for local guide examples while packaging alignment is still in progress.
+## Step 2: Run the Quickstart Example
 
-If you prefer a session-local variant without setting the variable permanently:
+The fastest end-to-end example needs only `contexta` and `scikit-learn`:
 
-```powershell
-$env:PYTHONPATH = "src"
-uv run python your_script.py
+```bash
+pip install "contexta[sklearn]"
+python examples/quickstart/qs01_sklearn_tabular.py
 ```
 
-If you prefer editable installation with `pip`, treat it as forward-looking packaging work rather than the most conservative prototype path:
+The script:
 
-```powershell
-python -m pip install -e .
+1. Loads the UCI Wine dataset and splits it into train / test sets.
+2. Trains an SVM baseline and a Random Forest, logging 5-fold CV metrics and evaluation metrics to a local `.contexta/` workspace as each run completes.
+3. Compares the two runs with `compare_runs`, picks the winner with `select_best_run`, and registers it as a deployment.
+4. Runs `diagnose_run` and `build_snapshot_report` on the best run.
+
+After it finishes, the workspace lives at `examples/quickstart/.contexta/wine-quality-clf/`.
+
+## Step 3: Understand The Core Concepts
+
+Contexta organises observability data into three truth planes:
+
+| Plane | What it stores |
+|-------|----------------|
+| Metadata | Projects, Runs, Stages, Environments, Deployments, Samples |
+| Records | MetricRecord, StructuredEventRecord, DegradedRecord, … |
+| Artifacts | Model files, dataset snapshots, any binary blob |
+
+Everything is addressed by a **canonical ref** string:
+
+```
+project:{name}
+run:{project}.{run}
+stage:{project}.{run}.{stage}
+record:{project}.{run}.{id}
+environment:{project}.{run}.{snap}
+deployment:{project}.{deploy}
 ```
 
-Once packaging and console-script alignment is complete, this guide can collapse back to a simpler install story.
+## Step 4: Write Your First Run
 
-## Step 2: Understand The Goal
+```python
+from datetime import datetime, timezone
+from pathlib import Path
+from contexta import Contexta
+from contexta.config import UnifiedConfig, WorkspaceConfig
+from contexta.contract import (
+    Project, Run, StageExecution,
+    MetricPayload, MetricRecord, RecordEnvelope,
+)
 
-This tutorial is not trying to show every feature at once.
+def now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-Its goal is to prove four things:
+ctx = Contexta(config=UnifiedConfig(
+    project_name="my-project",
+    workspace=WorkspaceConfig(root_path=Path(".contexta")),
+))
+store = ctx.metadata_store
 
-- the canonical import path works
-- a `.contexta/` workspace can be created
-- canonical data can be written
-- the unified facade can read that data and build a report
+# Register project and run
+store.projects.put_project(
+    Project(project_ref="project:my-project", name="my-project", created_at=now())
+)
+run_start = now()
+store.runs.put_run(
+    Run(run_ref="run:my-project.run-01", project_ref="project:my-project",
+        name="run-01", status="open", started_at=run_start, ended_at=None)
+)
 
-## Step 3: Run The Verified Quickstart Example
+# Register a stage
+store.stages.put_stage_execution(
+    StageExecution(stage_execution_ref="stage:my-project.run-01.train",
+                   run_ref="run:my-project.run-01", stage_name="train",
+                   status="completed", started_at=run_start, ended_at=now(), order_index=0)
+)
 
-Run the example from the repository root:
+# Log a metric
+ts = now()
+ctx.record_store.append(MetricRecord(
+    envelope=RecordEnvelope(
+        record_ref="record:my-project.run-01.r00001", record_type="metric",
+        recorded_at=ts, observed_at=ts, producer_ref="getting-started",
+        run_ref="run:my-project.run-01",
+        stage_execution_ref="stage:my-project.run-01.train",
+        completeness_marker="complete", degradation_marker="none",
+    ),
+    payload=MetricPayload(metric_key="accuracy", value=0.95, value_type="float64"),
+))
 
-```powershell
-$env:PYTHONPATH = "src"
-uv run python examples/quickstart/verified_quickstart.py
+# Close the run
+store.runs.put_run(
+    Run(run_ref="run:my-project.run-01", project_ref="project:my-project",
+        name="run-01", status="completed", started_at=run_start, ended_at=now())
+)
+
+store.close()
 ```
 
-The exact example source lives at [examples/quickstart/verified_quickstart.py](../../examples/quickstart/verified_quickstart.py).
+## Step 5: Query And Report
 
-This script:
+```python
+snapshot = ctx.get_run_snapshot("run:my-project.run-01")
+for rec in snapshot.records:
+    print(rec.key, rec.value)
 
-- creates a temporary `.contexta/` workspace
-- writes one project, one run, one stage, and one metric record
-- queries the run back through the facade
-- saves a markdown snapshot report under the workspace `reports/` directory
-
-## Step 4: What Happened
-
-The script did the following:
-
-1. created a temporary root and a `.contexta/` workspace path
-2. bound a `Contexta` facade to that workspace through `UnifiedConfig`
-3. wrote minimal canonical metadata and one metric record
-5. queried the run back through `get_run_snapshot(...)`
-6. built a report through `build_snapshot_report(...)`
-
-This is the shortest honest prototype tutorial because it exercises real canonical write and read paths without pretending every capture shortcut is already fully packaged as a polished onboarding flow.
-
-## Step 5: What To Look At Next
-
-After running the script, inspect these ideas:
-
-- the workspace path exists
-- the run is queryable by its canonical run ref
-- the report object has a title and sections
-- the product surface stays under the same `Contexta` facade
-
-## Runtime Capture Preview
-
-The runtime capture surface is already available and worth trying once you understand the canonical workspace story:
-
-```powershell
-$env:PYTHONPATH = "src"
-uv run python examples/quickstart/runtime_capture_preview.py
+report = ctx.build_snapshot_report("run:my-project.run-01")
+print(report.title)
+for section in report.sections:
+    print(" -", section.title)
 ```
-
-The preview source lives at [examples/quickstart/runtime_capture_preview.py](../../examples/quickstart/runtime_capture_preview.py).
-
-At the current prototype stage, treat this as the forward-looking runtime entry path, while the verified quickstart above remains the conservative route for query/report onboarding.
 
 ## Common Questions
 
-### Why Does This Tutorial Use The Verified Quickstart Script?
+### Do I need to set PYTHONPATH?
 
-Because the goal here is to give you a reliable, currently verified path from workspace creation to report generation.
+No. `pip install contexta` or `uv add contexta` puts the package on your
+Python path normally. `PYTHONPATH=src` is only needed if you run scripts
+directly against the repository source tree without installing.
 
-The example itself still uses canonical model writes under the hood, which avoids promising more runtime capture integration than the current prototype has already proven in the onboarding path.
+### Do I need a cloud account or API key?
 
-The example uses public re-export surfaces such as `contexta.config` and `contexta.contract` instead of internal module paths.
+No. Contexta is fully local. The `.contexta/` workspace is a directory on
+your filesystem.
 
-### Why Use Full Refs Like `run:guide-proj.demo-run`?
+### What is the canonical ref format?
 
-Because `Contexta` uses canonical identifiers as part of its stable contract. Using explicit refs makes the read path clearer and keeps the tutorial aligned with the contract layer.
-
-### Do I Need To Use `UnifiedConfig`?
-
-Not always. The facade can also be opened through other config-resolution paths. This guide uses `UnifiedConfig` because it is explicit and predictable for onboarding.
+See [Core Concepts](./core-concepts.md) for the full ref grammar.
 
 ## Where To Go Next
-
-After this tutorial, continue with:
 
 - [Key Features](./key-features.md)
 - [Tools and Surfaces](./tools-and-surfaces.md)
 - [Core Concepts](./core-concepts.md)
+- [Common Workflows](./common-workflows.md)
+- [Case Studies](./case-studies.md)
+- [`examples/quickstart/`](../../examples/quickstart/README.md)
+- [`examples/case_studies/`](../../examples/case_studies/README.md)
