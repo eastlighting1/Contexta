@@ -83,7 +83,7 @@ jobs:
       - name: Install from wheel into clean venv
         run: |
           uv venv /tmp/ctx-wheel-smoke
-          /tmp/ctx-wheel-smoke/bin/pip install dist/*.whl --quiet
+          uv pip install --python /tmp/ctx-wheel-smoke/bin/python dist/*.whl --quiet
 
       - name: Import smoke (from wheel)
         run: |
