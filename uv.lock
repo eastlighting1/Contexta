@@ -278,12 +278,18 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "duckdb" },
+]
+
+[package.optional-dependencies]
+all-integrations = [
+    { name = "mlflow" },
+    { name = "opentelemetry-api" },
+    { name = "pandas" },
+    { name = "polars" },
     { name = "scikit-learn" },
     { name = "torch" },
     { name = "transformers" },
 ]
-
-[package.optional-dependencies]
 dataframes = [
     { name = "pandas" },
     { name = "polars" },
@@ -297,28 +303,50 @@ notebook = [
 otel = [
     { name = "opentelemetry-api" },
 ]
+sklearn = [
+    { name = "scikit-learn" },
+]
+torch = [
+    { name = "torch" },
+]
+transformers = [
+    { name = "torch" },
+    { name = "transformers" },
+]
 
 [package.dev-dependencies]
 dev = [
+    { name = "numpy" },
     { name = "pytest" },
+    { name = "scikit-learn" },
+    { name = "torch" },
+    { name = "transformers" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "contexta", extras = ["sklearn", "torch", "transformers", "dataframes", "otel", "mlflow"], marker = "extra == 'all-integrations'" },
     { name = "duckdb", specifier = ">=1.5.1" },
     { name = "ipython", marker = "extra == 'notebook'", specifier = ">=8.0" },
     { name = "mlflow", marker = "extra == 'mlflow'", specifier = ">=2.0" },
     { name = "opentelemetry-api", marker = "extra == 'otel'", specifier = ">=1.20" },
     { name = "pandas", marker = "extra == 'dataframes'", specifier = ">=2.0" },
     { name = "polars", marker = "extra == 'dataframes'", specifier = ">=0.20" },
-    { name = "scikit-learn", specifier = ">=1.8.0" },
-    { name = "torch", specifier = ">=2.11.0" },
-    { name = "transformers", specifier = ">=5.5.3" },
+    { name = "scikit-learn", marker = "extra == 'sklearn'", specifier = ">=1.6" },
+    { name = "torch", marker = "extra == 'torch'", specifier = ">=2.5" },
+    { name = "torch", marker = "extra == 'transformers'", specifier = ">=2.5" },
+    { name = "transformers", marker = "extra == 'transformers'", specifier = ">=4.40" },
 ]
-provides-extras = ["dataframes", "notebook", "otel", "mlflow"]
+provides-extras = ["sklearn", "torch", "transformers", "dataframes", "notebook", "otel", "mlflow", "all-integrations"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=9.0.3" }]
+dev = [
+    { name = "numpy", specifier = ">=1.26" },
+    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "scikit-learn", specifier = ">=1.6" },
+    { name = "torch", specifier = ">=2.5" },
+    { name = "transformers", specifier = ">=4.40" },
+]
 
 [[package]]
 name = "contourpy"

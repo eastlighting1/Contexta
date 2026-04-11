@@ -195,5 +195,5 @@ for section in report.sections:
 ## 예제
 
 완전한 실행 가능 예제는
-[`examples/batch_sample/batch_sample_demo.py`](../../examples/batch_sample/batch_sample_demo.py)를
+[`examples/batch_sample/batch_sample_demo.py`](../../../examples/batch_sample/batch_sample_demo.py)를
 참고하세요.

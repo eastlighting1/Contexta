@@ -62,14 +62,19 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Install package
-        run: uv sync
+      - name: Install package (core + sklearn extra)
+        # --no-dev avoids pulling heavy torch/transformers from the dev group.
+        # --extra sklearn is required for qs01_sklearn_tabular.py.
+        run: uv sync --no-dev --extra sklearn
 
       - name: verified_quickstart.py
         run: uv run python examples/quickstart/verified_quickstart.py
 
       - name: runtime_capture_preview.py
         run: uv run python examples/quickstart/runtime_capture_preview.py
+
+      - name: qs01_sklearn_tabular.py
+        run: uv run python examples/quickstart/qs01_sklearn_tabular.py
 
   recovery-examples:
     name: Recovery examples
@@ -82,8 +87,9 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Install package
-        run: uv sync
+      - name: Install package (core only)
+        # Recovery examples only use contexta + duckdb -- no ML framework needed.
+        run: uv sync --no-dev
 
       - name: backup_restore_verify.py
         run: uv run python examples/recovery/backup_restore_verify.py

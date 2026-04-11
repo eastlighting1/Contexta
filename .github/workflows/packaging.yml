@@ -33,7 +33,10 @@ jobs:
           with zipfile.ZipFile(whl) as z:
               names = z.namelist()
           tops = set(n.split('/')[0] for n in names)
-          unexpected = [t for t in tops if t not in ('contexta', f'{whl.stem}.dist-info')]
+          # Wheel filename: {name}-{version}-{python}-{abi}-{platform}.whl
+          # dist-info inside: {name}-{version}.dist-info  (first two components only)
+          dist_info = '-'.join(whl.stem.split('-')[:2]) + '.dist-info'
+          unexpected = [t for t in tops if t not in ('contexta', dist_info)]
           assert not unexpected, f'Unexpected top-level in wheel: {unexpected}'
           print(f'wheel OK: {whl.name} ({len(names)} files, top-level clean)')
           "
