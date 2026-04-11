@@ -1,0 +1,29 @@
+[project]
+name = "contexta-examples"
+version = "0.0.0"
+requires-python = ">=3.14"
+
+# All examples use the local editable install of Contexta.
+# Heavy ML frameworks are listed here so they are resolved once
+# for the shared examples venv, not pulled into Contexta itself.
+dependencies = [
+    "contexta",
+    "scikit-learn>=1.6",
+    "torch>=2.5",
+    "transformers>=4.40",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+# Required for qs04_llm_evaluation.py (Linux / WSL + GPU only)
+llm = [
+    "vllm>=0.4",
+]
+
+[tool.uv]
+# Do not install this package itself -- examples are plain scripts.
+no-install-project = true
+
+[tool.uv.sources]
+# Point to the local library so examples always use the working tree.
+contexta = { path = "..", editable = true }

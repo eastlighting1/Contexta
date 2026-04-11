@@ -1,0 +1,147 @@
+name: Release
+
+# Triggered by pushing a version tag (e.g. git push origin v0.2.0).
+# Builds distributions, creates a GitHub Release, and publishes to PyPI
+# using Trusted Publishing (OIDC — no API token required).
+#
+# Prerequisites (one-time setup):
+#   1. On PyPI: Settings -> Trusted Publishers -> Add publisher
+#      Publisher: GitHub Actions
+#      Owner: {your-github-username}
+#      Repository: {your-repo-name}
+#      Workflow: release.yml
+#      Environment: pypi
+#   2. In GitHub: Settings -> Environments -> create "pypi" environment
+#      (optionally add required reviewers for extra gate)
+on:
+  push:
+    tags:
+      - "v[0-9]*"
+
+permissions:
+  contents: write   # needed to create GitHub Release and upload assets
+  id-token: write   # needed for PyPI Trusted Publishing (OIDC)
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    # No extra permissions needed beyond the workflow default for this job.
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          python-version: "3.14"
+
+      - name: Verify tag matches pyproject.toml version
+        run: |
+          TAG="${GITHUB_REF_NAME}"          # e.g. v0.2.0
+          PKG="v$(uv version --short)"      # e.g. v0.2.0
+          if [ "$TAG" != "$PKG" ]; then
+            echo "ERROR: tag $TAG does not match pyproject.toml version $PKG"
+            exit 1
+          fi
+          echo "Version match: $TAG == $PKG"
+
+      - name: Run release gate
+        run: |
+          uv sync --dev
+          uv run pytest --tb=short -q
+
+      - name: Dependency audit
+        run: uv audit --preview-features audit
+
+      - name: Build wheel and sdist
+        run: uv build
+
+      - name: Verify wheel contents
+        run: |
+          uv run python -c "
+          import zipfile, pathlib
+          whl = next(pathlib.Path('dist').glob('*.whl'))
+          with zipfile.ZipFile(whl) as z:
+              tops = set(n.split('/')[0] for n in z.namelist())
+          unexpected = [t for t in tops if 'contexta' not in t]
+          assert not unexpected, f'Unexpected top-level in wheel: {unexpected}'
+          print(f'wheel OK: {whl.name}')
+          "
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum contexta-*.whl contexta-*.tar.gz | tee ../checksums.txt
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: dist
+          path: |
+            dist/
+            checksums.txt
+          retention-days: 1
+
+  github-release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Download dist artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: dist
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME}"   # e.g. v0.2.0
+          PRERELEASE=""
+          # Mark alpha/beta/rc as pre-release
+          if echo "$VERSION" | grep -qE '(a|b|rc)[0-9]+$'; then
+            PRERELEASE="--prerelease"
+          fi
+          gh release create "$VERSION" \
+            dist/contexta-*.whl \
+            dist/contexta-*.tar.gz \
+            checksums.txt \
+            --title "Contexta ${VERSION}" \
+            --notes-file ".github/RELEASE_NOTES_${VERSION}.md" \
+            $PRERELEASE \
+          || gh release create "$VERSION" \
+            dist/contexta-*.whl \
+            dist/contexta-*.tar.gz \
+            checksums.txt \
+            --title "Contexta ${VERSION}" \
+            --generate-notes \
+            $PRERELEASE
+
+  pypi-publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          python-version: "3.14"
+
+      - name: Publish to PyPI (Trusted Publishing)
+        run: uv publish --trusted-publishing always

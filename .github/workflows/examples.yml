@@ -1,0 +1,95 @@
+name: Docs and Examples
+
+# Verifies that all internal doc links resolve and that all examples run cleanly.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  doc-links:
+    name: Internal link check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          python-version: "3.14"
+
+      - name: Check internal markdown links
+        run: |
+          uv run python -c "
+          import re
+          from pathlib import Path
+
+          ROOT = Path('.')
+          md_files = [*ROOT.glob('*.md'), *ROOT.glob('docs/**/*.md')]
+          link_re = re.compile(r'\[([^\]]*)\]\(([^)]+)\)')
+
+          broken = []
+          for md in sorted(md_files):
+              content = md.read_text(encoding='utf-8')
+              for m in link_re.finditer(content):
+                  url = m.group(2)
+                  if url.startswith(('http', '#', 'mailto:')):
+                      continue
+                  target = url.split('#')[0]
+                  resolved = (md.parent / target).resolve()
+                  if not resolved.exists():
+                      broken.append((str(md), url))
+
+          if broken:
+              for f, u in broken:
+                  print(f'BROKEN: {f} -> {u}')
+              raise SystemExit(f'{len(broken)} broken internal link(s) found.')
+          print(f'All internal links OK ({len(md_files)} files checked)')
+          "
+
+  quickstart-examples:
+    name: Quickstart examples
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          python-version: "3.14"
+
+      - name: Install package
+        run: uv sync
+
+      - name: verified_quickstart.py
+        run: uv run python examples/quickstart/verified_quickstart.py
+
+      - name: runtime_capture_preview.py
+        run: uv run python examples/quickstart/runtime_capture_preview.py
+
+  recovery-examples:
+    name: Recovery examples
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          python-version: "3.14"
+
+      - name: Install package
+        run: uv sync
+
+      - name: backup_restore_verify.py
+        run: uv run python examples/recovery/backup_restore_verify.py
+
+      - name: replay_outbox_demo.py
+        run: uv run python examples/recovery/replay_outbox_demo.py
+
+      - name: artifact_transfer_demo.py
+        run: uv run python examples/recovery/artifact_transfer_demo.py

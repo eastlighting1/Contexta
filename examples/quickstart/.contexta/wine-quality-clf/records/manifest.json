@@ -1,0 +1,8 @@
+{
+  "current_segment_id": 1,
+  "current_segment_record_count": 22,
+  "last_committed_sequence": 22,
+  "layout_mode": "jsonl_segments",
+  "layout_version": "1",
+  "next_sequence": 23
+}

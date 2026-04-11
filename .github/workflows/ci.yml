@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.14"]
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Dependency audit
+        run: uv audit --preview-features audit
+
+      - name: Run test suite
+        run: uv run pytest --tb=short -q
+
+      - name: Import smoke
+        run: |
+          uv run python -c "
+          from contexta import Contexta, ContextaError, __version__
+          from contexta.config import UnifiedConfig, load_config
+          from contexta.contract import Run, ArtifactManifest, ValidationReport
+          from contexta.capture import EventEmission, MetricEmission, RunScope
+          from contexta.store.metadata import MetadataStore
+          from contexta.store.records import RecordStore
+          from contexta.store.artifacts import ArtifactStore
+          from contexta.interpretation import QueryService
+          from contexta.recovery import create_workspace_backup, replay_outbox
+          print('import smoke: OK', __version__)
+          "
+
+      - name: CLI smoke
+        run: uv run contexta --help

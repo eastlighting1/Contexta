@@ -1,0 +1,117 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "contexta"
+version = "0.1.0"
+description = "Local-first observability for ML systems"
+readme = "README.md"
+requires-python = ">=3.14"
+license = { text = "MIT" }
+authors = [
+    { name = "Kim" },
+]
+keywords = [
+    "machine-learning",
+    "observability",
+    "mlops",
+    "monitoring",
+    "ml-observability",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# Contexta's own runtime requires only DuckDB.
+# ML framework dependencies belong in your project, not here.
+dependencies = [
+    "duckdb>=1.5.1",
+]
+
+[project.optional-dependencies]
+# Framework integrations (install only what you use)
+sklearn = [
+    "scikit-learn>=1.6",
+]
+torch = [
+    "torch>=2.5",
+]
+transformers = [
+    "transformers>=4.40",
+    "torch>=2.5",
+]
+
+# Tabular / notebook extras
+dataframes = [
+    "pandas>=2.0",
+    "polars>=0.20",
+]
+notebook = [
+    "ipython>=8.0",
+]
+
+# Export / integration extras
+otel = [
+    "opentelemetry-api>=1.20",
+]
+mlflow = [
+    "mlflow>=2.0",
+]
+
+# Convenience meta-extras
+all-integrations = [
+    "contexta[sklearn,torch,transformers,dataframes,otel,mlflow]",
+]
+
+[project.scripts]
+contexta = "contexta.surfaces.cli.main:main"
+
+[project.urls]
+Homepage = "https://github.com/your-org/contexta"
+Documentation = "https://your-org.github.io/contexta"
+Repository = "https://github.com/your-org/contexta"
+"Bug Tracker" = "https://github.com/your-org/contexta/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/contexta"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/docs",
+    "/examples",
+    "/README.md",
+    "/LICENSE",
+    "/SECURITY.md",
+    "/CONTRIBUTING.md",
+    "/pyproject.toml",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+# Release gate: all markers below must pass with 0 failures before any release.
+markers = [
+    "unit: fast, no I/O, single-module tests",
+    "integration: cross-module or store-backed tests",
+    "e2e: full workspace lifecycle tests",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "scikit-learn>=1.6",
+    "torch>=2.5",
+    "transformers>=4.40",
+    "numpy>=1.26",
+]
