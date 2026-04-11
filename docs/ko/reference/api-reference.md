@@ -87,13 +87,13 @@ Contexta.open(
 구성된 캡처 싱크들입니다.
 
 `Contexta.metadata_store` → `MetadataStore`
-메타데이터 트루스 플레인(truth-plane) 스토어에 대한 직접 접근 권한입니다.
+메타데이터 원본(Source of Truth) 스토어에 대한 직접 접근 권한입니다.
 
 `Contexta.record_store` → `RecordStore`
-레코드 트루스 플레인 스토어에 대한 직접 접근 권한입니다.
+레코드 원본(Source of Truth) 스토어에 대한 직접 접근 권한입니다.
 
 `Contexta.artifact_store` → `ArtifactStore`
-아티팩트 트루스 플레인 스토어에 대한 직접 접근 권한입니다.
+아티팩트 원본(Source of Truth) 스토어에 대한 직접 접근 권한입니다.
 
 `Contexta.repository` → `CompositeStoreRepository`
 모든 스토어에 걸친 복합 읽기 저장소(repository)입니다.
@@ -1891,7 +1891,7 @@ class MetadataStore(
 )
 ```
 
-표준 메타데이터 트루스 플레인 스토어입니다. 로컬 DuckDB 데이터베이스에서 프로젝트, 실행, 스테이지 및 환경 레코드를 관리합니다.
+표준 메타데이터 원본(Source of Truth) 스토어입니다. 로컬 DuckDB 데이터베이스에서 프로젝트, 실행, 스테이지 및 환경 레코드를 관리합니다.
 
 컨텍스트 매니저로 사용할 수 있습니다:
 
@@ -1987,7 +1987,7 @@ class RecordStore(
 )
 ```
 
-추가 전용(append-only) 레코드 트루스 플레인 스토어입니다. 모든 캡처 레코드 타입에 대해 JSONL 세그먼트 파일을 관리합니다.
+추가 전용(append-only) 레코드 원본(Source of Truth) 스토어입니다. 모든 캡처 레코드 타입에 대해 JSONL 세그먼트 파일을 관리합니다.
 
 ---
 
@@ -2045,7 +2045,7 @@ class ArtifactStore(
 )
 ```
 
-아티팩트 트루스 플레인 스토어입니다. 매니페스트 추적을 통해 콘텐츠 주소 지정 방식(content-addressed)의 바이너리 아티팩트 저장을 관리합니다.
+아티팩트 원본(Source of Truth) 스토어입니다. 매니페스트 추적을 통해 콘텐츠 주소 지정 방식(content-addressed)의 바이너리 아티팩트 저장을 관리합니다.
 
 ---
 
@@ -2294,7 +2294,7 @@ contexta.recovery.replay_outbox(
 ) -> ReplayBatchResult
 ```
 
-대기 중인 아웃박스(outbox) 레코드를 구성된 싱크들로 재생합니다.
+대기 중인 Outbox 메시지를 구성된 싱크들로 재처리(Replay)합니다.
 
 **매개변수:**
 
@@ -2305,10 +2305,10 @@ contexta.recovery.replay_outbox(
 이 호출에서 재생할 레코드의 최대 개수입니다.
 
 `acknowledge_successes`
-`True`일 경우 성공적으로 재생된 레코드는 아웃박스에서 제거됩니다.
+`True`일 경우 성공적으로 처리된 메시지는 Outbox에서 제거됩니다.
 
 `dead_letter_after_failures`
-연속된 실패 횟수가 이 값을 넘으면 레코드를 데드 레터(dead-letter) 큐로 이동합니다. `None`일 경우 실패한 레코드는 아웃박스에 무기한 유지됩니다.
+연속된 실패 횟수가 이 값을 넘으면 레코드를 데드 레터(dead-letter) 큐로 이동합니다. `None`일 경우 실패한 메시지는 Outbox에 무기한 유지됩니다.
 
 `sinks`
 재생할 대상 싱크들을 직접 지정합니다. `None`일 경우 `config`에 있는 싱크들이 사용됩니다.
@@ -2561,10 +2561,10 @@ class CaptureResult(OperationResult[Any]):
 선택적인 기능 저하 페이로드입니다. `degradation_emitted=True`가 필요합니다.
 
 `recovered_to_outbox`
-실패한 캡처가 재생 아웃박스로 복구되었는지 여부입니다.
+실패한 캡처가 Outbox 재처리 공간으로 복구되었는지 여부입니다.
 
 `replay_refs`
-아웃박스 복구와 연관된 재생 참조 문자열들입니다.
+Outbox 복구와 연관된 재생 참조 문자열들입니다.
 
 `error_code`
 선택적인 명시적 에러 코드입니다.
@@ -3028,13 +3028,13 @@ class UnifiedConfig:
 캡처 및 런타임 설정들입니다.
 
 `metadata`
-메타데이터 트루스 플레인 설정들입니다.
+메타데이터 원본(Source of Truth) 스토어 설정들입니다.
 
 `records`
-레코드 트루스 플레인 설정들입니다.
+레코드 원본(Source of Truth) 스토어 설정들입니다.
 
 `artifacts`
-아티팩트 트루스 플레인 설정들입니다.
+아티팩트 원본(Source of Truth) 스토어 설정들입니다.
 
 `interpretation`
 해석 레이어(Interpretation-layer) 설정들입니다.
@@ -3176,3 +3176,51 @@ contexta.contract.validate_trace_span_record(
 **반환값:** `ValidationReport`
 
 ---
+
+### `validate_trace_span_record`
+
+```python
+def validate_trace_span_record(obj: Any) -> TraceSpanRecord
+```
+
+객체가 유효한 `TraceSpanRecord` 모델인지 검증합니다.
+
+### `validate_degraded_record`
+
+```python
+def validate_degraded_record(obj: Any) -> DegradedRecord
+```
+
+객체가 유효한 `DegradedRecord` 모델인지 검증합니다.
+
+### `validate_artifact_manifest`
+
+```python
+def validate_artifact_manifest(obj: Any) -> ArtifactManifest
+```
+
+객체가 유효한 `ArtifactManifest` 구조를 가지고 있는지 검증합니다.
+
+### `validate_lineage_edge`
+
+```python
+def validate_lineage_edge(obj: Any) -> LineageEdge
+```
+
+객체가 유효한 `LineageEdge` 연결 구조인지 검증합니다.
+
+### `validate_provenance_record`
+
+```python
+def validate_provenance_record(obj: Any) -> ProvenanceRecord
+```
+
+객체가 유효한 `ProvenanceRecord` 모델인지 검증합니다.
+
+### `validate_extension_field_set`
+
+```python
+def validate_extension_field_set(obj: Any) -> ExtensionFieldSet
+```
+
+객체가 유효한 확정 필드 세트(`ExtensionFieldSet`)인지 검증합니다.

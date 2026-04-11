@@ -47,7 +47,7 @@
 
 ## `contexta.api`나 `contexta.runtime` 같은 내부 네임스페이스를 의존해도 되나요?
 
-아니요. 공공 문서는 이러한 내부 네임스페이스를 임포트 지점으로 사용하는 것을 의도적으로 피하고 있습니다. `contexta`, `contexta.config`, `contexta.contract`, `contexta.capture`, `contexta.interpretation`, `contexta.recovery` 및 3개의 스토어(store) 패키지와 같이 문서화된 공용 인터페이스를 사용하세요.
+아니요. 공식 문서는 이러한 내부 네임스페이스를 임포트 지점으로 사용하는 것을 의도적으로 피하고 있습니다. `contexta`, `contexta.config`, `contexta.contract`, `contexta.capture`, `contexta.interpretation`, `contexta.recovery` 및 3개의 스토어(store) 패키지와 같이 문서화된 공식 인터페이스를 사용하세요.
 
 ## 예제가 계속 작동하는지 어떻게 알 수 있나요?
 

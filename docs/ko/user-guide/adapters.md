@@ -157,6 +157,16 @@ sink = MLflowSink(run_id="abc123def456")
 MLflowSink는 `PayloadFamily.RECORD`만 지원합니다. 컨텍스트 페이로드는
 무시됩니다.
 
+### 태그 기록 동작 (Tag write behaviour)
+
+기본적으로 MLflow 어댑터는 다음을 수행합니다:
+
+- `contexta_project` 및 `contexta_run`을 MLflow 태그로 추가합니다.
+- 단순 `Contexta` 속성들을 MLflow 태그로 복사합니다.
+- 충돌을 피하기 위해 모든 내부 수준의 속성(attributes)에 `ctx.` 접두사를 붙입니다.
+
+다른 전략이 필요하다면 어댑터를 생성할 때 커스텀 `tag_mapper` 호출 객체(callable)를 전달하세요.
+
 ---
 
 ## 스레드 안전성

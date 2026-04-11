@@ -6,7 +6,7 @@
 
 - 워크스페이스 백업
 - 복구 계획 및 검증 전용(verify-only) 체크
-- 아웃박스(outbox) 재생(Replay)
+- Outbox 메시지 재처리(Replay)
 - 아티팩트 검증 및 전송
 
 현재의 프로토타입 단계에서 가장 신뢰할 수 있는 운영자 경로는 `contexta.recovery`의 공용 Python API와 [`examples/recovery/`](../../examples/recovery/README.md)에 있는 실행 가능한 예제들입니다.
@@ -80,7 +80,7 @@ restore_result = restore_workspace(config, restore_plan)
 
 ## 재생 (Replay)
 
-재생은 일반적인 쿼리 워크플로가 아닌 복구-아웃박스(recovery-outbox) 처리를 위한 것입니다.
+재생(Replay)은 일반적인 쿼리 워크플로가 아닌 Outbox 복구(recovery-outbox) 처리를 위한 것입니다.
 
 공식 진입점은 다음과 같습니다:
 
@@ -104,7 +104,7 @@ result = replay_outbox(config)
 
 실행 가능한 예제:
 
-- [아웃박스 재생 예제](../../examples/recovery/replay_outbox_demo.py)
+- [Outbox 메시지 재처리 예제](../../examples/recovery/replay_outbox_demo.py)
 
 ## 아티팩트 검증 및 전송 (Artifact Verification And Transfer)
 

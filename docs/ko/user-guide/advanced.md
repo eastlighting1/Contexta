@@ -1,6 +1,6 @@
 # 고급 Contexta 사용법
 
-이 가이드는 루트 퍼사드(facade)를 넘어 설정, 트루스 플레인(truth planes), 해석 서비스(interpretation services) 또는 복구 워크플로를 직접 다루어야 하는 사용자를 위한 것입니다.
+이 가이드는 루트 퍼사드(facade)를 넘어 설정, 원본(Source of Truth) 스토어, 해석 서비스(interpretation services) 또는 복구 워크플로를 직접 다루어야 하는 사용자를 위한 것입니다.
 
 기본 원칙은 다음과 같습니다:
 
@@ -58,9 +58,9 @@ resolved = load_config(
 - 주변 상태(ambient state) 없는 직접적인 설정 패치
 - 더 명확한 워크스페이스 소유권
 
-## 직접적인 트루스 플레인(Truth-Plane) 접근
+## 직접적인 원본(Source of Truth) 스토어 접근
 
-퍼사드는 세 가지의 영구 저장 트루스 플레인을 노출합니다:
+퍼사드는 세 가지의 영구 저장 원본(Source of Truth) 스토어를 노출합니다:
 
 - `ctx.metadata_store`
 - `ctx.record_store`
@@ -172,13 +172,13 @@ print(restore_check.verification_notes)
 
 실행 가능한 예제:
 
-- [복구 아웃박스 재생 예제](../../../examples/recovery/replay_outbox_demo.py)
+- [Outbox 메시지 재처리 예제](../../../examples/recovery/replay_outbox_demo.py)
 - [복구 아티팩트 전송 예제](../../../examples/recovery/artifact_transfer_demo.py)
 
 다음 작업이 필요할 때 복구 패키지를 사용하세요:
 
 - 백업 또는 복구 계획
-- 아웃박스 재생
+- Outbox 메시지 재처리(Replay)
 
 ## 준수해야 할 공용 경계 (Public Boundaries)
 

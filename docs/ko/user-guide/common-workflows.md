@@ -117,7 +117,7 @@ json_payload = snapshot_report.to_json()
 
 ## 진단(Diagnostics) 조사
 
-시스템이 불완전하거나 의심스러운 상태를 직접 지적해주기를 원할 때 진단 기능을 사용합니다:
+시스템이 부분 수집 혹은 저하(degraded)되거나 의심스러운 상태를 직접 지적해주기를 원할 때 진단 기능을 사용합니다:
 
 ```python
 diagnostics = ctx.diagnose_run("run:guide-proj.demo-run")
@@ -128,7 +128,7 @@ for issue in diagnostics.issues:
 
 다음과 같은 질문에 더 빠르게 답을 얻고 싶을 때 진단 기능을 사용하세요:
 
-- 무엇이 불완전해 보이는가?
+- 무엇이 부분 수집 혹은 저하(degraded)된 것으로 보이는가?
 - 무엇이 일관되지 않아 보이는가?
 - 어떤 이슈를 가장 먼저 조사해야 하는가?
 

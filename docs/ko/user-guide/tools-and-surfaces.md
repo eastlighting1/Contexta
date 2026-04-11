@@ -36,9 +36,9 @@ from contexta import Contexta
 | `contexta.config` | Stable | 설정 모델, 프로필, 환경 변수 재정의 | 가끔 |
 | `contexta.contract` | Stable | 표준 모델, 검증, 직렬화 | 대개 아니오 |
 | `contexta.capture` | Stable | 런타임 스코프, 방출, 캡처 헬퍼 | 가끔 |
-| `contexta.store.metadata` | Stable | 메타데이터 트루스 플레인 접근 | 대개 아니오 |
-| `contexta.store.records` | Stable | 레코드 트루스 플레인, 스캔/재생/내보내기 | 대개 아니오 |
-| `contexta.store.artifacts` | Stable | 아티팩트 트루스 플레인, 검증/가져오기/내보내기 | 대개 아니오 |
+| `contexta.store.metadata` | Stable | 메타데이터 원본(Source of Truth) 스토어 접근 | 대개 아니오 |
+| `contexta.store.records` | Stable | 레코드 원본(Source of Truth) 스토어, 스캔/재생/내보내기 | 대개 아니오 |
+| `contexta.store.artifacts` | Stable | 아티팩트 원본(Source of Truth) 스토어, 검증/가져오기/내보내기 | 대개 아니오 |
 | `contexta.interpretation` | Stable | 쿼리, 비교, 진단, 리니지, 리포트 | 가끔 |
 | `contexta.recovery` | Advanced | 재생, 백업, 복구 | 아니오 |
 | CLI | Stable | 명령줄 조사 및 운영자 작업 | 예, 쉘 워크플로를 선호하는 경우 |
