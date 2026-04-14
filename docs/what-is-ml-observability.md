@@ -114,6 +114,18 @@ These are much harder to answer with only traces, metrics, and logs:
 
 These questions are why `Contexta` frames ML Observability as a broader evidence discipline.
 
+## Harness Engineering: Observability for AI Agents
+
+While ML Observability is critical for human operators, it is equally essential for autonomous AI coding agents—a practice known as **Harness Engineering**. 
+
+As AI agents (like Codex or Claude) increasingly construct and maintain software, they require a structured environment ("harness") to operate safely over long contexts. If an agent encounters a bug, it cannot read a human's mind or navigate disparate cloud dashboards. It needs:
+
+- **Agent-Readable Evidence**: JSON-structured records, precise lineage paths, and deterministic metrics that an agent can parse instantly.
+- **Generator-Evaluator Loops**: The ability to decouple code generation from evaluation. An evaluator agent needs sandboxed workspaces to run tests, inspect snapshots, or query local logs, which it then uses to create a concrete, scoreable feedback loop for the generator agent.
+- **Context Resets without Memory Loss**: Instead of passing unwieldy chat histories that cause "context anxiety," agents rely on artifact evidence and execution contexts as a systematic "handoff" between autonomous sessions.
+
+In this autonomous paradigm, `Contexta` acts not just as a telemetry store for humans, but as the canonical, machine-readable **System of Record** that AI agents use to reason about past runs, establish invariant structures, and mechanically enforce project quality.
+
 ## ML Observability Is Not Just "MLOps Metadata"
 
 Another useful clarification is what this document is not arguing.

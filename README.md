@@ -1,7 +1,7 @@
 <h1 align="center">Contexta</h1>
 
 <p align="center">
-  <strong>Local-first observability for ML systems.</strong>
+  <strong>Local-first observability for ML systems & Harness Engineering.</strong>
 </p>
 
 <p align="center">
@@ -24,16 +24,17 @@
   <a href="#documentation-map">Docs Map</a>
 </p>
 
-`Contexta` is a local-first ML observability library. It provides one canonical import root, one canonical CLI, one canonical workspace, and one consistent contract for writing, storing, querying, comparing, and recovering observability data — without a cloud backend.
+`Contexta` is a local-first ML observability library. It provides one canonical import root, one canonical CLI, one canonical workspace, and one consistent contract for writing, storing, querying, comparing, and recovering observability data — without a cloud backend. 
+It is designed as the perfect infrastructure for both human engineers and autonomous AI coding agents — MUST-HAVE for Harness Engineering.
 
 ## Why Contexta
 
 - **One product surface**
   Start from `from contexta import Contexta` instead of stitching together separate tools.
-- **Canonical local workspace**
-  Keep metadata, records, artifacts, reports, and recovery state in a local `.contexta/` workspace.
-- **Read-oriented investigation**
-  Query runs, compare outcomes, inspect diagnostics, follow lineage, and build reports from canonical data.
+- **Canonical local workspace (Agent-Ready)**
+  Keep metadata, records, artifacts, reports, and recovery state in a local `.contexta/` workspace—perfectly isolated for autonomous agent worktrees and context resets.
+- **Read-oriented investigation & Evaluator Loops**
+  Query runs, compare outcomes, inspect diagnostics, follow lineage, and build reports from canonical data. Structured specifically to support QA agents and Generator-Evaluator loops.
 - **Recovery built in**
   Replay, backup, restore, and artifact transfer are first-class features, not separate utilities.
 - **Framework-agnostic**

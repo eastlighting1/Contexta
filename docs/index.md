@@ -2,7 +2,7 @@
 
 This is the public documentation hub for `Contexta`.
 
-`Contexta` is the canonical product surface for local-first ML observability workflows. The documentation set is organized so new users can start quickly, advanced users can find stable surface boundaries, and operators can navigate recovery work without mixing public guidance with internal implementation notes.
+`Contexta` is the canonical product surface for local-first ML observability and Harness Engineering workflows. Whether you are a human operator investigating a model degradation or an autonomous AI agent reading structured evidence in a generator-evaluator loop, Contexta provides a machine-readable, stable source of truth. The documentation set is organized so new users can start quickly, advanced users can find stable surface boundaries, and operators (both human and AI) can navigate recovery work without mixing public guidance with internal implementation notes.
 
 ## Start Here
 

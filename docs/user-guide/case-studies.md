@@ -647,6 +647,47 @@ are reproducible.
 
 ---
 
+### Case 13: Building a Generator-Evaluator Loop
+
+**Persona:** AI Agent / Harness Engineer  
+**Example:** `examples/case_studies/case13_generator_evaluator.py`
+
+#### Situation
+
+A team is deploying a fully autonomous AI coding agent (e.g., an Anthropic Claude evaluator) to self-correct code. The system uses a "Generator" agent to write the application and an "Evaluator" agent (using Playwright) to test the UI. The Evaluator needs to store its findings (snapshots, DOM state, scores) so the Generator can read them, verify the feedback, and iterate on it without hallucinations or "context anxiety."
+
+#### Without Contexta
+
+- Agents pass giant strings of raw logs to each other in chat history.
+- Context window fills up fast, leading the agent to truncate history or suffer from "context anxiety."
+- Evaluator feedback is transient. If an agent crashes, the entire QA evidence is lost.
+- No structured `Handoff` artifact exists to cleanly decouple generation and evaluation.
+
+#### With Contexta
+
+```python
+# Evaluator Agent records its findings into the local Contexta workspace
+snapshot_path = run_playwright_test()
+score = compute_aesthetic_score()
+
+# Record the heuristic evaluation as a metric and attach the DOM snapshot as an artifact
+ctx.record_store.append(MetricRecord(
+    envelope=RecordEnvelope(..., record_type="metric", stage_id="qa-evaluator"),
+    payload=MetricPayload(metric_key="ui-functional-score", value=score)
+))
+ctx.artifact_store.bind_artifact(run_ref, snapshot_path, name="dom_snapshot_v1")
+
+# The Generator Agent resets its context and simply queries the Canonical evidence:
+diag = ctx.diagnose_run(run_ref)
+latest_eval_metrics = ctx.get_run_snapshot(run_ref).records
+```
+
+`Contexta` serves as the **System of Record** for the agent. The Generator doesn't need a huge chat history; it just queries the precise `MetricRecord` and `Artifact` from the workspace to understand what the Evaluator found. This mechanically forces the agents to communicate through invariants rather than prone-to-hallucinations chat logs.
+
+**Key APIs:** `MetricRecord` (for score heuristics), `ArtifactStore` (for DOM snapshots), `diagnose_run`
+
+---
+
 ## Running the examples
 
 Each script is self-contained and requires no external services:
