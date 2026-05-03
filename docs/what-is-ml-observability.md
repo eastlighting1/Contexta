@@ -648,7 +648,7 @@ This intuition connects the public concepts in the project. Even when implementa
 
 It also explains why `Contexta` does not frame ML Observability as application Observability with a few ML-specific tags. Tags can add context, but they do not by themselves create a coherent evidence model. The project instead starts from the objects that ML teams need to reason about: runs, stages, records, samples, artifacts, environments, relationships, operational outcomes, and reports.
 
-## What This Means for Contexta
+## What This Means for Contexta 
 
 This document describes the direction encoded in `Contexta`. It does not claim that every possible ML Observability workflow is complete or that every surface in the project is equally mature.
 
